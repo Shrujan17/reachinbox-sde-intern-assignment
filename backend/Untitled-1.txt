@@ -1,0 +1,72 @@
+class Array:
+    def _init_(self, size):
+        self.size = size                  # Maximum capacity
+        self.data = [None] * size         # Memory allocation
+        self.count = 0                    # Number of elements currently in array
+
+    def append(self, value):
+        if self.count < self.size:
+            self.data[self.count] = value
+            self.count += 1
+        else:
+            print("Array is full. Cannot append.")
+
+    def insert(self, index, value):
+        if self.count >= self.size:
+            print("Array is full. Cannot insert.")
+        elif index < 0 or index > self.count:
+            print("Invalid index.")
+        else:
+            for i in range(self.count, index, -1):
+                self.data[i] = self.data[i - 1]
+            self.data[index] = value
+            self.count += 1
+
+    def edit(self, index, value):
+        if 0 <= index < self.count:
+            self.data[index] = value
+        else:
+            print("Invalid index. Cannot edit.")
+
+    def delete(self, index):
+        if 0 <= index < self.count:
+            for i in range(index, self.count - 1):
+                self.data[i] = self.data[i + 1]
+            self.data[self.count - 1] = None
+            self.count -= 1
+        else:
+            print("Invalid index. Cannot delete.")
+
+    def total_elements(self):
+        return self.count
+
+    def is_empty(self):
+        return self.count == 0
+
+    def is_full(self):
+        return self.count == self.size
+
+    def get(self, index):
+        if 0 <= index < self.count:
+            return self.data[index]
+        else:
+            print("Invalid index.")
+            return None
+
+    def get_capacity(self):
+        return self.size
+
+# Example usage:
+arr = Array(5)
+arr.append(10)
+arr.append(20)
+arr.insert(1, 15)
+arr.edit(2, 25)
+arr.delete(0)
+
+print("Array elements:", arr.data)
+print("Total elements:", arr.total_elements())
+print("Is empty?", arr.is_empty())
+print("Is full?", arr.is_full())
+print("Element at index 1:", arr.get(1))
+print("Array capacity:", arr.get_capacity())
