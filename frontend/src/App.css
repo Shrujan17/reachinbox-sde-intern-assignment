@@ -1,0 +1,166 @@
+/* index.css */
+* {
+  box-sizing: border-box;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  background-color: #0a0b10; /* ReachInbox Dark Theme */
+  color: #e5e7eb;
+}
+
+/* Auth / Login Page */
+.auth-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+/* Dashboard Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 40px;
+  background: #16171d;
+  border-bottom: 1px solid #2d2e35;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  border: 1px solid #4f46e5;
+}
+
+/* Main Layout Grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 24px;
+  max-width: 1200px;
+  margin: 32px auto;
+  padding: 0 20px;
+}
+
+/* Cards */
+.card {
+  background: #16171d;
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid #2d2e35;
+}
+
+/* Form Styling */
+.compose-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+label {
+  font-size: 11px;
+  font-weight: bold;
+  color: #9ca3af;
+  text-transform: uppercase;
+}
+
+input, textarea, select {
+  background: #0a0b10;
+  border: 1px solid #2d2e35;
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+input:focus {
+  border-color: #4f46e5;
+  outline: none;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #2d2e35;
+  margin-bottom: 16px;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  padding: 12px 24px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.tab-btn.active {
+  color: #4f46e5;
+  border-bottom: 2px solid #4f46e5;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: #4f46e5;
+  font-weight: bold;
+  padding: 12px;
+  border-radius: 8px;
+  transition: 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #4338ca;
+}
+
+.btn-logout {
+  background: rgba(220, 38, 38, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+/* Table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  font-size: 11px;
+  color: #9ca3af;
+  text-align: left;
+  padding-bottom: 12px;
+}
+
+td {
+  padding: 12px 0;
+  border-top: 1px solid #2d2e35;
+  font-size: 13px;
+}
+
+.status-pill {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.status-sent { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.status-pending { background: rgba(234, 179, 8, 0.1); color: #eab308; }
