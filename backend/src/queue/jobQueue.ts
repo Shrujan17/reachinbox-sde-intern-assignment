@@ -1,5 +1,5 @@
 import { Queue } from "bullmq";
-import connection from "./redis";
+import redisConnection from "./redis";
 
 export interface EmailJob {
   to: string;
@@ -9,19 +9,19 @@ export interface EmailJob {
 }
 
 export const emailQueue = new Queue<EmailJob>("email-queue", {
-  connection,
+  connection: redisConnection,
 });
 
-export async function scheduleJob(job: EmailJob) {
+export async function scheduleEmail(job: EmailJob) {
   const delay = new Date(job.sendAt).getTime() - Date.now();
 
-  if (delay < 0) {
-    throw new Error("Scheduled time must be in the future");
+  if (delay <= 0) {
+    throw new Error("sendAt must be in the future");
   }
 
   await emailQueue.add("send-email", job, {
     delay,
     removeOnComplete: true,
-    removeOnFail: true,
+    removeOnFail: false,
   });
 }

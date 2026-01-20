@@ -1,23 +1,30 @@
 import { Worker } from "bullmq";
-import connection from "../queue/redis";
-import { sendEmail } from "../services/emailService";
+import redisConnection from "../queue/redis";
+import nodemailer from "nodemailer";
 
-interface EmailJob {
-  to: string;
-  subject: string;
-  body: string;
-  sendAt: string;
-}
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER!,
+    pass: process.env.EMAIL_PASS!, // App password
+  },
+});
 
-new Worker<EmailJob>(
+new Worker(
   "email-queue",
   async (job) => {
-    console.log("⏰ Job triggered at:", new Date().toISOString());
-    console.log("📩 Sending email to:", job.data.to);
+    const { to, subject, body } = job.data;
 
-    await sendEmail(job.data.to, job.data.subject, job.data.body);
+    await transporter.sendMail({
+      from: `"ReachInbox" <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      text: body,
+    });
 
-    console.log("✅ Email sent successfully");
+    console.log("✅ Email sent to", to);
   },
-  { connection }
+  {
+    connection: redisConnection,
+  }
 );
