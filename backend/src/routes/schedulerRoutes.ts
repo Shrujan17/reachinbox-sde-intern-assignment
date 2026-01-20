@@ -1,11 +1,11 @@
 import { Router, Request, Response } from "express";
 import { emailQueue } from "../queue/jobQueue";
-import { PrismaClient } from "@prisma/client"; // Ensure Prisma is installed
+import { PrismaClient } from "@prisma/client";
 
 const router = Router();
 const prisma = new PrismaClient();
 
-// 1. Schedule the Email
+// Schedule Email
 router.post("/schedule", async (req: Request, res: Response) => {
   try {
     const { to, subject, body, sendAt } = req.body;
@@ -18,7 +18,7 @@ router.post("/schedule", async (req: Request, res: Response) => {
       { delay: Math.max(0, delay) }
     );
 
-    // Save to Database so it appears in the Dashboard
+    // Save to DB (matches the schema model 'EmailJob')
     const email = await prisma.emailJob.create({
       data: {
         recipient: to,
@@ -36,7 +36,7 @@ router.post("/schedule", async (req: Request, res: Response) => {
   }
 });
 
-// 2. Fetch Emails for the Dashboard (Fixes empty tables)
+// Fetch Emails for Dashboard
 router.get("/emails", async (req: Request, res: Response) => {
   try {
     const emails = await prisma.emailJob.findMany({
