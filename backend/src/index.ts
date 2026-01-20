@@ -1,42 +1,34 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-const express = require("express");
-const cors = require("cors");
-const session = require("express-session");
+import express from "express";
+import cors from "cors";
+import passport from "passport";
 
-import passport from "./auth/google";
+// 🔹 ROUTES
 import authRoutes from "./routes/authRoutes";
-import emailRoutes from "./routes/emailRoutes";
-import getEmailsRoute from "./routes/getEmails";
+import scheduleRoutes from "./routes/schedulerRoutes";
+
+// 🔹 GOOGLE PASSPORT CONFIG
+import "./config/google";
+
+// 🔹 WORKER
+import "./workers/schedulerworker";
 
 const app = express();
 
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL,
-    credentials: true,
-  })
-);
-
+// 🔹 MIDDLEWARE
+app.use(cors());
 app.use(express.json());
-
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "reachinbox_secret",
-    resave: false,
-    saveUninitialized: false,
-  })
-);
-
 app.use(passport.initialize());
-app.use(passport.session());
 
-app.use("/api", emailRoutes);
+// 🔹 ROUTES
 app.use("/api/auth", authRoutes);
-app.use("/api", getEmailsRoute);
+app.use("/api", scheduleRoutes);
 
-const PORT = process.env.PORT || 5000;
+// 🔹 SERVER
+const PORT = Number(process.env.PORT) || 5000;
+
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`[Shrujan Scheduler] Server running on port ${PORT}`);
 });
