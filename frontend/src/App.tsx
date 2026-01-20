@@ -1,50 +1,55 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./index.css";
 
 axios.defaults.withCredentials = true;
-const API = import.meta.env.VITE_API_URL;
+const API_BASE = "https://reachinbox-sde-intern-assignment.onrender.com/api";
 
 const App = () => {
   const [user, setUser] = useState<any>(null);
-  const [emails] = useState<any[]>([]); // kept for future
-  void emails; // ✅ fixes TS6133
+  const [emails, setEmails] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState("scheduled");
   const [loading, setLoading] = useState(true);
 
-  const [form, setForm] = useState({
-    recipient: "",
-    subject: "",
-    body: "",
-    scheduledAt: "",
+  const [formData, setFormData] = useState({
+    recipient: "", subject: "", body: "", scheduledAt: ""
   });
 
   useEffect(() => {
-    axios.get(`${API}/auth/me`)
-      .then(res => setUser(res.data))
-      .catch(() => setUser(null))
-      .finally(() => setLoading(false));
+    const init = async () => {
+      try {
+        const authRes = await axios.get(`${API_BASE}/auth/me`);
+        if (authRes.data && authRes.data.id) {
+          setUser(authRes.data);
+          const emailRes = await axios.get(`${API_BASE}/emails`);
+          setEmails(emailRes.data);
+        }
+      } catch (err) { console.log("Not logged in"); }
+      finally { setLoading(false); }
+    };
+    init();
   }, []);
 
-  const submit = async (e: React.FormEvent) => {
+  const onSchedule = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    await axios.post(`${API}/schedule`, {
-      to: form.recipient,
-      subject: form.subject,
-      body: form.body,
-      sendAt: new Date(form.scheduledAt).toISOString(),
-    });
-
-    alert("✅ Email Scheduled");
+    try {
+      await axios.post(`${API_BASE}/schedule`, {
+        to: formData.recipient,
+        subject: formData.subject,
+        body: formData.body,
+        sendAt: new Date(formData.scheduledAt).toISOString(),
+      });
+      alert("✅ Email Job Scheduled!");
+    } catch (err) { alert("❌ Error scheduling email."); }
   };
 
-  if (loading) return <div className="loading-screen">Loading...</div>;
+  if (loading) return <div className="loading-screen">Loading ReachInbox...</div>;
 
   if (!user) {
     return (
       <div className="auth-container">
-        <h1>📫 ReachInbox</h1>
-        <button onClick={() => window.location.href = `${API}/auth/google`}>
+        <h1 className="logo-large">📫 ReachInbox</h1>
+        <button className="btn-primary" onClick={() => window.location.href=`${API_BASE}/auth/google`}>
           Continue with Google
         </button>
       </div>
@@ -52,13 +57,19 @@ const App = () => {
   }
 
   return (
-    <form className="compose-form" onSubmit={submit}>
-      <input placeholder="To" onChange={e => setForm({...form, recipient: e.target.value})} required />
-      <input placeholder="Subject" onChange={e => setForm({...form, subject: e.target.value})} required />
-      <textarea placeholder="Body" onChange={e => setForm({...form, body: e.target.value})} required />
-      <input type="datetime-local" onChange={e => setForm({...form, scheduledAt: e.target.value})} required />
-      <button type="submit">Schedule</button>
-    </form>
+    <div className="dashboard-container">
+      {/* Header and Grid logic as provided in your earlier dashboard code */}
+      <header className="header">
+        <div className="logo">📫 ReachInbox</div>
+        <div className="user-profile">
+          <div className="user-name">{user.displayName}</div>
+          <button className="btn-logout" onClick={() => window.location.href=`${API_BASE}/auth/logout`}>Logout</button>
+        </div>
+      </header>
+      <div className="dashboard-grid">
+         {/* Insert your Compose Card and List Card here */}
+      </div>
+    </div>
   );
 };
 
