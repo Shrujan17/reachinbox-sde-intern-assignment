@@ -1,8 +1,13 @@
 import { ConnectionOptions } from "bullmq";
 
-const connection: ConnectionOptions = {
-  host: process.env.REDIS_HOST || "127.0.0.1",
-  port: Number(process.env.REDIS_PORT) || 6379,
-};
+const connection: ConnectionOptions = process.env.REDIS_URL
+  ? {
+      url: process.env.REDIS_URL,
+      tls: {}, // 🔒 required for Upstash
+    }
+  : {
+      host: "127.0.0.1",
+      port: 6379,
+    };
 
 export default connection;
