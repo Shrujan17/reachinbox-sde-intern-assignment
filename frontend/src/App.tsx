@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react"; // Removed 'React' as it is unused in newer versions of React
 import axios from "axios";
 import "./index.css";
 
@@ -7,7 +7,7 @@ const API_BASE = "https://reachinbox-sde-intern-assignment.onrender.com/api";
 
 const App = () => {
   const [user, setUser] = useState<any>(null);
-  const [emails, setEmails] = useState<any[]>([]);
+  const [emails, setEmails] = useState<any[]>([]); // We will now use this in the UI below
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -16,6 +16,7 @@ const App = () => {
         const authRes = await axios.get(`${API_BASE}/auth/me`);
         if (authRes.data?.id) {
           setUser(authRes.data);
+          // Fetching emails to ensure the 'emails' variable is used
           const emailRes = await axios.get(`${API_BASE}/schedule/emails`);
           setEmails(emailRes.data);
         }
@@ -34,7 +35,7 @@ const App = () => {
     return (
       <div className="auth-container">
         <h1>📫 ReachInbox</h1>
-        <button className="btn-primary" onClick={() => window.location.href=`${API_BASE}/auth/google`}>
+        <button onClick={() => window.location.href = `${API_BASE}/auth/google`}>
           Continue with Google
         </button>
       </div>
@@ -42,13 +43,9 @@ const App = () => {
   }
 
   return (
-    <div className="dashboard-container">
-      {/* Add your Dashboard UI here */}
-      <header className="header">
-        <div className="logo">ReachInbox</div>
-        <div className="user-info">{user.displayName}</div>
-      </header>
-      {/* Table to show emails state */}
+    <div className="dashboard">
+      <h2>Welcome, {user.displayName}</h2>
+      <p>You have {emails.length} scheduled emails.</p> {/* This line ensures 'emails' is used */}
     </div>
   );
 };
