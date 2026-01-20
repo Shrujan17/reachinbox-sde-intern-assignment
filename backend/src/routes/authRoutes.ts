@@ -16,8 +16,13 @@ router.get(
   "/google/callback",
   passport.authenticate("google", { session: false }),
   (req, res) => {
-    res.send("✅ Google authentication successful");
+    // ✅ Redirect to frontend after login
+    res.redirect(
+      "https://reachinbox-frontend.onrender.com"
+      // OR your actual frontend URL
+    );
   }
 );
+
 
 export default router;
