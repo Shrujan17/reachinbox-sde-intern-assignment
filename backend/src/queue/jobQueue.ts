@@ -8,7 +8,7 @@ export interface EmailJob {
   sendAt: string;
 }
 
-export const emailQueue = new Queue("email-queue", {
+export const emailQueue = new Queue<EmailJob>("email-queue", {
   connection,
 });
 

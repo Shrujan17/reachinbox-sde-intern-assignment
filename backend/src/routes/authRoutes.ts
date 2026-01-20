@@ -1,9 +1,9 @@
+// backend/src/routes/authRoutes.ts
 import { Router } from "express";
 import passport from "passport";
 
 const router = Router();
 
-// Start Google OAuth
 router.get(
   "/google",
   passport.authenticate("google", {
@@ -11,13 +11,20 @@ router.get(
   })
 );
 
-// Google callback → REDIRECT TO FRONTEND
 router.get(
   "/google/callback",
   passport.authenticate("google", { session: false }),
   (req, res) => {
-    return res.redirect("https://reachinbox-frontend.onrender.com");
+    res.redirect(process.env.FRONTEND_URL!);
   }
 );
+
+router.get("/me", (req, res) => {
+  res.json(req.user || null);
+});
+
+router.get("/logout", (_req, res) => {
+  res.redirect(process.env.FRONTEND_URL!);
+});
 
 export default router;

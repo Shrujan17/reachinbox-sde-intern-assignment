@@ -1,13 +1,4 @@
-import { ConnectionOptions } from "bullmq";
+import IORedis from "ioredis";
 
-const connection: ConnectionOptions = process.env.REDIS_URL
-  ? {
-      url: process.env.REDIS_URL,
-      tls: {}, // 🔒 required for Upstash
-    }
-  : {
-      host: "127.0.0.1",
-      port: 6379,
-    };
-
-export default connection;
+const redis = new IORedis(process.env.REDIS_URL!);
+export default redis;
