@@ -1,21 +1,20 @@
 import { Router } from "express";
-import prisma from "../db/prisma";
+import { PrismaClient } from "@prisma/client";
 
 const router = Router();
+const prisma = new PrismaClient();
 
-router.get("/emails", async (_req, res) => {
-  const emails = await prisma.email.findMany({
-    orderBy: { createdAt: "desc" },
-  });
-  res.json(emails);
-});
-
-router.get("/emails/sent", async (_req, res) => {
-  const emails = await prisma.email.findMany({
-    where: { status: "SENT" },
-    orderBy: { sentAt: "desc" },
-  });
-  res.json(emails);
+router.get("/", async (req, res) => {
+  try {
+    // ✅ Use emailJob to match your schema.prisma
+    const emails = await prisma.emailJob.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+    res.json(emails);
+  } catch (error) {
+    console.error("Fetch error:", error);
+    res.status(500).json({ error: "Failed to fetch emails" });
+  }
 });
 
 export default router;
