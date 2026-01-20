@@ -11,7 +11,7 @@ const app = express();
 app.use(cors({
   origin: [
     "http://localhost:5173",
-    "https://reachinbox-frontend.onrender.com"
+    "https://reachinbox-frontend-n3dd.onrender.com"
   ],
   credentials: true
 }));
