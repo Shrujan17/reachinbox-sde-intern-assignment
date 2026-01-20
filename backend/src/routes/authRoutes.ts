@@ -3,7 +3,7 @@ import passport from "passport";
 
 const router = Router();
 
-// STEP 1: Start Google OAuth
+// Start Google OAuth
 router.get(
   "/google",
   passport.authenticate("google", {
@@ -11,18 +11,13 @@ router.get(
   })
 );
 
-// STEP 2: Google callback
+// Google callback → REDIRECT TO FRONTEND
 router.get(
   "/google/callback",
   passport.authenticate("google", { session: false }),
   (req, res) => {
-    // ✅ Redirect to frontend after login
-    res.redirect(
-      "https://reachinbox-frontend.onrender.com"
-      // OR your actual frontend URL
-    );
+    return res.redirect("https://reachinbox-frontend.onrender.com");
   }
 );
-
 
 export default router;
