@@ -7,11 +7,12 @@ const API_BASE = import.meta.env.VITE_API_URL;
 
 const App = () => {
   const [user, setUser] = useState<any>(null);
-  const [emails, setEmails] = useState<any[]>([]); // kept intentionally
+  const [emails, setEmails] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 👇 THIS LINE FIXES THE TS6133 ERROR (Option B)
+  // ✅ FIX TS6133 ERRORS (KEEP STATE, MARK AS USED)
   void emails;
+  void setEmails;
 
   const [formData, setFormData] = useState({
     recipient: "",
