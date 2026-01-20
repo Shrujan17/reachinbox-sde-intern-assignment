@@ -1,8 +1,8 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import express from "express";
-import cors from "cors";
+import * as express from "express";
+import * as cors from "cors";
 import session from "express-session";
 import passport from "./auth/google";
 
