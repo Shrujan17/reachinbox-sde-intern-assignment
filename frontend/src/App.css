@@ -1,166 +1,248 @@
-/* index.css */
-* {
-  box-sizing: border-box;
-  font-family: 'Inter', system-ui, sans-serif;
-}
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import "./index.css";
 
-body {
-  margin: 0;
-  background-color: #0a0b10; /* ReachInbox Dark Theme */
-  color: #e5e7eb;
-}
+axios.defaults.withCredentials = true;
 
-/* Auth / Login Page */
-.auth-container {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
+const API_BASE =
+  import.meta.env.VITE_API_BASE ||
+  "https://reachinbox-sde-intern-assignment.onrender.com/api";
 
-/* Dashboard Header */
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 40px;
-  background: #16171d;
-  border-bottom: 1px solid #2d2e35;
-}
+const App = () => {
+  const [user, setUser] = useState<any>(null);
+  const [emails, setEmails] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState("scheduled");
+  const [loading, setLoading] = useState(true);
+  const [leadCount, setLeadCount] = useState(0);
 
-.user-profile {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+  const [formData, setFormData] = useState({
+    recipient: "",
+    subject: "",
+    body: "",
+    scheduledAt: "",
+  });
 
-.avatar {
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  border: 1px solid #4f46e5;
-}
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const authRes = await axios.get(`${API_BASE}/auth/me`);
+        if (authRes.data?.id) {
+          setUser(authRes.data);
+          const emailRes = await axios.get(`${API_BASE}/emails`);
+          setEmails(emailRes.data);
+        }
+      } catch {
+        console.log("Not logged in");
+      } finally {
+        setLoading(false);
+      }
+    };
+    init();
+  }, []);
 
-/* Main Layout Grid */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: 1fr 1.5fr;
-  gap: 24px;
-  max-width: 1200px;
-  margin: 32px auto;
-  padding: 0 20px;
-}
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-/* Cards */
-.card {
-  background: #16171d;
-  padding: 24px;
-  border-radius: 12px;
-  border: 1px solid #2d2e35;
-}
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      const emailsFound = text.match(
+        /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g
+      );
+      setLeadCount(emailsFound ? emailsFound.length : 0);
+    };
+    reader.readAsText(file);
+  };
 
-/* Form Styling */
-.compose-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+  const onSchedule = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
+    try {
+      await axios.post(`${API_BASE}/schedule`, {
+        to: formData.recipient,
+        subject: formData.subject,
+        body: formData.body,
+        sendAt: new Date(formData.scheduledAt).toISOString(), // 🔑 UTC
+      });
 
-label {
-  font-size: 11px;
-  font-weight: bold;
-  color: #9ca3af;
-  text-transform: uppercase;
-}
+      alert("✅ Email scheduled successfully!");
 
-input, textarea, select {
-  background: #0a0b10;
-  border: 1px solid #2d2e35;
-  color: white;
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 14px;
-}
+      const res = await axios.get(`${API_BASE}/emails`);
+      setEmails(res.data);
+    } catch (err) {
+      console.error(err);
+      alert("❌ Failed to schedule email");
+    }
+  };
 
-input:focus {
-  border-color: #4f46e5;
-  outline: none;
-}
+  if (loading) {
+    return <div className="loading-screen">Loading ReachInbox...</div>;
+  }
 
-/* Tabs */
-.tabs {
-  display: flex;
-  border-bottom: 1px solid #2d2e35;
-  margin-bottom: 16px;
-}
+  if (!user) {
+    return (
+      <div className="auth-container">
+        <h1 className="logo-large">📫 ReachInbox</h1>
+        <p>Login to manage your AI-driven cold outreach</p>
+        <button
+          className="btn-primary"
+          onClick={() =>
+            (window.location.href = `${API_BASE}/auth/google`)
+          }
+        >
+          Continue with Google
+        </button>
+      </div>
+    );
+  }
 
-.tab-btn {
-  background: none;
-  border: none;
-  color: #9ca3af;
-  padding: 12px 24px;
-  font-weight: bold;
-  cursor: pointer;
-}
+  return (
+    <div className="dashboard-container">
+      <header className="header">
+        <div className="logo">📫 ReachInbox</div>
+        <div className="user-profile">
+          <div className="user-info">
+            <div className="user-name">{user.displayName}</div>
+            <div className="user-email">{user.emails?.[0]?.value}</div>
+          </div>
+          <img
+            src={user.photos?.[0]?.value}
+            className="avatar"
+            alt="User"
+          />
+          <button
+            className="btn-logout"
+            onClick={() =>
+              (window.location.href = `${API_BASE}/auth/logout`)
+            }
+          >
+            Logout
+          </button>
+        </div>
+      </header>
 
-.tab-btn.active {
-  color: #4f46e5;
-  border-bottom: 2px solid #4f46e5;
-}
+      <div className="dashboard-grid">
+        {/* COMPOSE */}
+        <div className="card">
+          <h3 className="card-title">✍️ Compose New Email</h3>
 
-/* Buttons */
-.btn-primary {
-  background-color: #4f46e5;
-  font-weight: bold;
-  padding: 12px;
-  border-radius: 8px;
-  transition: 0.2s;
-}
+          <form className="compose-form" onSubmit={onSchedule}>
+            <div className="form-group">
+              <label>Lead List</label>
+              <input type="file" accept=".csv,.txt" onChange={handleFileUpload} />
+              {leadCount > 0 && (
+                <small>{leadCount} leads detected</small>
+              )}
+            </div>
 
-.btn-primary:hover {
-  background-color: #4338ca;
-}
+            <input
+              placeholder="Recipient Email"
+              value={formData.recipient}
+              onChange={(e) =>
+                setFormData({ ...formData, recipient: e.target.value })
+              }
+              required
+            />
 
-.btn-logout {
-  background: rgba(220, 38, 38, 0.1);
-  color: #ef4444;
-  border: 1px solid rgba(220, 38, 38, 0.2);
-}
+            <input
+              placeholder="Subject"
+              value={formData.subject}
+              onChange={(e) =>
+                setFormData({ ...formData, subject: e.target.value })
+              }
+              required
+            />
 
-/* Table */
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
+            <textarea
+              placeholder="Message body"
+              value={formData.body}
+              onChange={(e) =>
+                setFormData({ ...formData, body: e.target.value })
+              }
+              required
+            />
 
-th {
-  font-size: 11px;
-  color: #9ca3af;
-  text-align: left;
-  padding-bottom: 12px;
-}
+            <div className="form-group">
+              <label>Send At</label>
+              <input
+                type="datetime-local"
+                value={formData.scheduledAt}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    scheduledAt: e.target.value,
+                  })
+                }
+                required
+              />
+            </div>
 
-td {
-  padding: 12px 0;
-  border-top: 1px solid #2d2e35;
-  font-size: 13px;
-}
+            <button className="btn-primary" type="submit">
+              Schedule Job
+            </button>
+          </form>
+        </div>
 
-.status-pill {
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 10px;
-  font-weight: bold;
-  text-transform: uppercase;
-}
+        {/* LIST */}
+        <div className="card">
+          <div className="tabs">
+            <button
+              className={`tab-btn ${
+                activeTab === "scheduled" ? "active" : ""
+              }`}
+              onClick={() => setActiveTab("scheduled")}
+            >
+              Scheduled
+            </button>
+            <button
+              className={`tab-btn ${
+                activeTab === "sent" ? "active" : ""
+              }`}
+              onClick={() => setActiveTab("sent")}
+            >
+              Sent
+            </button>
+          </div>
 
-.status-sent { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
-.status-pending { background: rgba(234, 179, 8, 0.1); color: #eab308; }
+          <table>
+            <thead>
+              <tr>
+                <th>Recipient</th>
+                <th>Subject</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {emails
+                .filter((e) =>
+                  activeTab === "sent"
+                    ? e.status === "sent"
+                    : e.status !== "sent"
+                )
+                .map((email) => (
+                  <tr key={email.id}>
+                    <td>{email.recipient}</td>
+                    <td>{email.subject}</td>
+                    <td>
+                      <span
+                        className={`status-pill ${
+                          email.status === "sent"
+                            ? "status-sent"
+                            : "status-pending"
+                        }`}
+                      >
+                        {email.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default App;
