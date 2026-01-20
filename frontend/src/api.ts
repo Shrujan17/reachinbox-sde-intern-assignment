@@ -1,5 +1,6 @@
-export const API =
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+// frontend/src/api.ts
+
+export const API = import.meta.env.VITE_API_URL;
 
 export async function getUser() {
   const res = await fetch(`${API}/auth/me`, {
@@ -16,10 +17,18 @@ export async function getEmails() {
 }
 
 export async function scheduleEmail(data: any) {
-  await fetch(`${API}/schedule-email`, {
+  const res = await fetch(`${API}/schedule`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+    },
     credentials: "include",
     body: JSON.stringify(data),
   });
+
+  if (!res.ok) {
+    throw new Error("Failed to schedule email");
+  }
+
+  return res.json();
 }
