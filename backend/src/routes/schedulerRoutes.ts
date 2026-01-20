@@ -1,18 +1,20 @@
 import { Router } from "express";
-import { scheduleEmail } from "../queue/jobQueue";
+import { emailQueue } from "../queue/jobQueue";
 
 const router = Router();
 
 router.post("/schedule", async (req, res) => {
-  try {
-    const { to, subject, body, sendAt } = req.body;
+  const { to, subject, body, sendAt } = req.body;
 
-    await scheduleEmail({ to, subject, body, sendAt });
+  const delay = new Date(sendAt).getTime() - Date.now();
 
-    res.json({ success: true });
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
-  }
+  await emailQueue.add(
+    "send-email",
+    { to, subject, body },
+    { delay }
+  );
+
+  res.json({ message: "Email scheduled successfully" });
 });
 
 export default router;
