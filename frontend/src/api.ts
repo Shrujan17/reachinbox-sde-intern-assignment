@@ -1,6 +1,5 @@
 export const API =
-  import.meta.env.VITE_API_BASE ||
-  "https://reachinbox-sde-intern-assignment.onrender.com/api";
+  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export async function getUser() {
   const res = await fetch(`${API}/auth/me`, {
@@ -16,22 +15,11 @@ export async function getEmails() {
   return res.json();
 }
 
-export async function scheduleEmail(data: {
-  to: string;
-  subject: string;
-  body: string;
-  sendAt: string;
-}) {
-  const res = await fetch(`${API}/schedule`, {
+export async function scheduleEmail(data: any) {
+  await fetch(`${API}/schedule-email`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
     body: JSON.stringify(data),
   });
-
-  if (!res.ok) {
-    throw new Error("Failed to schedule email");
-  }
-
-  return res.json();
 }

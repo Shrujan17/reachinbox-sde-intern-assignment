@@ -4,7 +4,8 @@ import "./index.css";
 
 // Configure axios for session support
 axios.defaults.withCredentials = true;
-const API_BASE = "http://localhost:5000/api";
+const API_BASE =
+  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const App = () => {
   const [user, setUser] = useState<any>(null);
