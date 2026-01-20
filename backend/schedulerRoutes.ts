@@ -1,9 +1,8 @@
 import { Router, Request, Response } from "express";
 import { emailQueue } from "../queue/jobQueue";
 
-const router = Router(); // ✅ Fixes: "Cannot find name 'router'"
+const router = Router(); // This fixes the "Cannot find name 'router'" error
 
-// ✅ Fixes: Parameter 'req' and 'res' implicitly have 'any' type
 router.post("/schedule", async (req: Request, res: Response) => {
   try {
     const { to, subject, body, sendAt } = req.body;
@@ -18,10 +17,9 @@ router.post("/schedule", async (req: Request, res: Response) => {
 
     res.json({ message: "Email scheduled successfully" });
   } catch (error) {
-    console.error("Scheduling error:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-// ✅ Fixes: "Module ... has no default export" in index.ts
+// This fixes the "has no default export" error in index.ts
 export default router;
