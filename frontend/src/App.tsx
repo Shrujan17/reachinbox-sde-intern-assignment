@@ -1,8 +1,10 @@
-throw new Error("FRONTEND BUILD CHECK");
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./index.css";
 
+/**
+ * Backend base URL
+ */
 const API_BASE = "https://reachinbox-sde-intern-assignment.onrender.com/api";
 
 /**
@@ -18,31 +20,23 @@ axios.interceptors.request.use((config) => {
 
 function App() {
   const [user, setUser] = useState<any>(null);
-  const [emails, setEmails] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const initAuth = async () => {
-      // 1️⃣ Capture token from URL (FIRST)
-      const params = new URLSearchParams(window.location.search);
-      const token = params.get("token");
-
-      if (token) {
-        localStorage.setItem("token", token);
-        window.history.replaceState({}, "", "/");
-      }
-
-      // 2️⃣ Now safely call backend
       try {
-        const me = await axios.get(`${API_BASE}/auth/me`);
+        // 1️⃣ Read token from URL (after Google redirect)
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get("token");
 
-        if (me.data?.id) {
-          setUser(me.data);
-          const res = await axios.get(`${API_BASE}/schedule/emails`);
-          setEmails(res.data);
-        } else {
-          setUser(null);
+        if (token) {
+          localStorage.setItem("token", token);
+          window.history.replaceState({}, "", "/");
         }
+
+        // 2️⃣ Fetch logged-in user
+        const res = await axios.get(`${API_BASE}/auth/me`);
+        setUser(res.data || null);
       } catch {
         setUser(null);
       } finally {
@@ -53,10 +47,16 @@ function App() {
     initAuth();
   }, []);
 
+  // ⏳ Loading state
   if (loading) {
-    return <div className="loading-screen">Loading ReachInbox...</div>;
+    return (
+      <div className="auth-container">
+        <h2>Loading ReachInbox…</h2>
+      </div>
+    );
   }
 
+  // 🔐 Not logged in
   if (!user) {
     return (
       <div className="auth-container">
@@ -73,10 +73,21 @@ function App() {
     );
   }
 
+  // ✅ Logged in
   return (
-    <div className="dashboard">
-      <h2>Welcome, {user.displayName}</h2>
-      <p>Scheduled Emails: {emails.length}</p>
+    <div style={{ color: "white", padding: 40 }}>
+      <h1>Welcome, {user.displayName}</h1>
+      <p>{user.emails?.[0]?.value}</p>
+
+      <button
+        className="btn-primary"
+        onClick={() => {
+          localStorage.removeItem("token");
+          window.location.reload();
+        }}
+      >
+        Logout
+      </button>
     </div>
   );
 }
