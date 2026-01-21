@@ -1,18 +1,12 @@
 import axios from "axios";
 
-export const API_BASE =
-  "https://reachinbox-sde-intern-assignment.onrender.com/api";
-
 const api = axios.create({
-  baseURL: API_BASE
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  baseURL: import.meta.env.VITE_API_BASE,
+  headers: {
+    Authorization: localStorage.getItem("token")
+      ? `Bearer ${localStorage.getItem("token")}`
+      : ""
   }
-  return config;
 });
 
 export default api;

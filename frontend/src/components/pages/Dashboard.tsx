@@ -1,29 +1,25 @@
 import { useEffect, useState } from "react";
-import api from "../api";
-import { EmailJob, User } from "../types";
-import Header from "../components/Header";
-import EmailTable from "../components/EmailTable";
-import ComposeEmail from "./ComposeEmail";
+import api from "../../api";
+import type { EmailJob, User } from "../../types";
+import Header from "../Header";
+import EmailTable from "../EmailTable";
 
 export default function Dashboard({ user }: { user: User }) {
-  const [tab, setTab] = useState<"scheduled" | "sent">("scheduled");
   const [emails, setEmails] = useState<EmailJob[]>([]);
+  const [tab, setTab] = useState<"scheduled" | "sent">("scheduled");
 
   useEffect(() => {
-    api.get(`/emails/${tab}`).then((res) => setEmails(res.data));
+    api.get<EmailJob[]>("/schedule/emails").then((res) => {
+      setEmails(res.data);
+    });
   }, [tab]);
 
   return (
     <>
       <Header user={user} />
-
-      <div className="tabs">
-        <button onClick={() => setTab("scheduled")}>Scheduled</button>
-        <button onClick={() => setTab("sent")}>Sent</button>
-      </div>
-
-      <ComposeEmail />
-      <EmailTable data={emails} />
+      <button onClick={() => setTab("scheduled")}>Scheduled</button>
+      <button onClick={() => setTab("sent")}>Sent</button>
+      <EmailTable emails={emails} />
     </>
   );
 }
