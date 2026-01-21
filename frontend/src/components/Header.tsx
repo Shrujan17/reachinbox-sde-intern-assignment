@@ -1,17 +1,31 @@
 import type { User } from "../types";
 
-export default function Header({ user, onLogout }: { user: User; onLogout: () => void }) {
+interface Props {
+  user: User;
+  onLogout: () => void;
+}
+
+export default function Header({ user, onLogout }: Props) {
   return (
     <header className="header">
-      <div className="user-info">
-        <img src={user.avatar} alt="avatar" className="avatar" />
-        <div>
-          <div>{user.displayName}</div>
-          <div className="email">{user.email}</div>
-        </div>
-      </div>
+      <div className="logo">ReachInbox</div>
 
-      <button onClick={onLogout}>Logout</button>
+      <div className="user-profile">
+        <div className="user-info">
+          <div className="user-name">{user.displayName}</div>
+          <div className="user-email">{user.email}</div>
+        </div>
+
+        <img
+          className="avatar"
+          src={user.avatar}
+          alt="avatar"
+        />
+
+        <button className="btn-logout" onClick={onLogout}>
+          Logout
+        </button>
+      </div>
     </header>
   );
 }

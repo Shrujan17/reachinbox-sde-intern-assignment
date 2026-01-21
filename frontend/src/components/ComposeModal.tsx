@@ -1,51 +1,55 @@
 import { useState } from "react";
 import api from "../api";
 
-export default function ComposeModal({ onClose }: { onClose: () => void }) {
+interface Props {
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+export default function ComposeModal({ onClose, onSuccess }: Props) {
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
-  const [emails, setEmails] = useState<string[]>([]);
-  const [startTime, setStartTime] = useState("");
-  const [delay, setDelay] = useState(2);
-  const [limit, setLimit] = useState(100);
+  const [loading, setLoading] = useState(false);
 
-  function handleFile(file: File) {
-    file.text().then((text) => {
-      const list = text
-        .split(/\r?\n|,/)
-        .map((e) => e.trim())
-        .filter((e) => e.includes("@"));
-      setEmails(list);
-    });
-  }
-
-  async function schedule() {
-    await api.post("/schedule", {
-      subject,
-      body,
-      emails,
-      startTime,
-      delay,
-      hourlyLimit: limit,
-    });
-    onClose();
+  async function handleSubmit() {
+    setLoading(true);
+    try {
+      await api.post("/schedule", {
+        subject,
+        body,
+        // add emails / delay / limits later
+      });
+      onSuccess(); // ✅ refresh dashboard
+      onClose();   // ✅ close modal
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <div className="modal">
       <h3>Compose New Email</h3>
 
-      <input placeholder="Subject" onChange={(e) => setSubject(e.target.value)} />
-      <textarea placeholder="Body" onChange={(e) => setBody(e.target.value)} />
+      <input
+        placeholder="Subject"
+        value={subject}
+        onChange={(e) => setSubject(e.target.value)}
+      />
 
-      <input type="file" onChange={(e) => e.target.files && handleFile(e.target.files[0])} />
-      <div>{emails.length} emails detected</div>
+      <textarea
+        placeholder="Body"
+        value={body}
+        onChange={(e) => setBody(e.target.value)}
+      />
 
-      <input type="datetime-local" onChange={(e) => setStartTime(e.target.value)} />
-      <input type="number" value={delay} onChange={(e) => setDelay(+e.target.value)} />
-      <input type="number" value={limit} onChange={(e) => setLimit(+e.target.value)} />
+      <button
+        className="btn-primary"
+        onClick={handleSubmit}
+        disabled={loading}
+      >
+        {loading ? "Scheduling..." : "Schedule Email"}
+      </button>
 
-      <button onClick={schedule}>Schedule</button>
       <button onClick={onClose}>Cancel</button>
     </div>
   );
