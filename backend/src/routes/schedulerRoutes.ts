@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { emailQueue } from "../queue/emailQueue";
 import { verifyToken } from "../utils/jwt";
@@ -6,11 +6,21 @@ import { verifyToken } from "../utils/jwt";
 const router = Router();
 const prisma = new PrismaClient();
 
-router.post("/schedule", async (req, res) => {
+/**
+ * Schedule a new email
+ */
+router.post("/", async (req: Request, res: Response) => {
   try {
-    const token = req.headers.authorization?.split(" ")[1];
-    const user = verifyToken(token!);
+    // 🔐 Auth
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ error: "Missing token" });
+    }
 
+    const token = authHeader.split(" ")[1];
+    verifyToken(token);
+
+    // 📩 Payload
     const {
       to,
       subject,
@@ -19,37 +29,49 @@ router.post("/schedule", async (req, res) => {
       sendAt
     } = req.body;
 
+    if (!to || !subject || !body || !senderEmail || !sendAt) {
+      return res.status(400).json({ error: "Missing fields" });
+    }
+
+    // 🗄️ Persist in DB
     const email = await prisma.emailJob.create({
       data: {
         recipient: to,
         subject,
         body,
         senderEmail,
-        scheduledAt: new Date(sendAt)
+        scheduledAt: new Date(sendAt),
+        status: "pending"
       }
     });
 
+    // ⏳ Schedule job
     const delay = new Date(sendAt).getTime() - Date.now();
 
     await emailQueue.add(
       "send-email",
       { emailId: email.id },
       {
-        jobId: email.id,
+        jobId: email.id, // idempotency
         delay: Math.max(0, delay)
       }
     );
 
-    res.json(email);
-  } catch {
-    res.status(401).json({ error: "Unauthorized" });
+    return res.json(email);
+  } catch (err) {
+    console.error("Schedule error:", err);
+    return res.status(500).json({ error: "Failed to schedule email" });
   }
 });
 
-router.get("/emails", async (_, res) => {
+/**
+ * Get all emails
+ */
+router.get("/emails", async (_: Request, res: Response) => {
   const emails = await prisma.emailJob.findMany({
     orderBy: { createdAt: "desc" }
   });
+
   res.json(emails);
 });
 
