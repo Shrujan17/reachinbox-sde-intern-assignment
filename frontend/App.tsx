@@ -1,3 +1,4 @@
+throw new Error("FRONTEND BUILD CHECK");
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./index.css";
