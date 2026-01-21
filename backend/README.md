@@ -72,3 +72,48 @@ JWT_SECRET=supersecretkey
 
 GMAIL_USER=your_email@gmail.com
 GMAIL_APP_PASSWORD=your_app_password
+
+📧 Ethereal Email Setup (for testing)
+
+Visit https://ethereal.email
+
+Create a test account
+
+Copy credentials into .env
+
+Emails can be previewed without real delivery
+
+▶️ How to Run Backend Locally
+cd backend
+npm install
+npx prisma generate
+npx prisma migrate dev
+npm run build
+npm start
+
+Backend runs on:
+
+http://localhost:5000
+
+🔌 API Endpoints
+
+GET /api/auth/google
+GET /api/auth/google/callback
+GET /api/auth/me
+POST /api/schedule
+GET /api/schedule/scheduled
+GET /api/schedule/sent
+✅ Production Ready
+Restart-safe
+Horizontally scalable
+Queue-based architecture
+Real OAuth & Email delivery
+
+---
+
+Commit the file (RIGHT SIDE)
+On the right: https://reachinbox-sde-intern-assignment.onrender.com
+- **Commit message**:
+add backend README
+Click **Commit changes**
+ Backend README is DONE.
