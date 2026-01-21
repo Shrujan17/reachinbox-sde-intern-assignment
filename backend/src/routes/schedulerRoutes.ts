@@ -1,51 +1,54 @@
 import { Router } from "express";
-import jwt from "jsonwebtoken";
 import { PrismaClient } from "@prisma/client";
-import { emailQueue } from "../queue/jobQueue";
+import { emailQueue } from "../queue/emailQueue";
+import { verifyToken } from "../utils/jwt";
 
 const router = Router();
 const prisma = new PrismaClient();
 
-const isAuth = (req: any, res: any, next: any) => {
-  const auth = req.headers.authorization;
-  if (!auth) return res.status(401).json({ error: "Unauthorized" });
-
+router.post("/schedule", async (req, res) => {
   try {
-    const token = auth.split(" ")[1];
-    req.user = jwt.verify(token, process.env.JWT_SECRET!);
-    next();
-  } catch {
-    res.status(401).json({ error: "Invalid token" });
-  }
-};
+    const token = req.headers.authorization?.split(" ")[1];
+    const user = verifyToken(token!);
 
-router.post("/schedule", isAuth, async (req, res) => {
-  const { to, subject, body, sendAt } = req.body;
-
-  const delay = new Date(sendAt).getTime() - Date.now();
-
-  await emailQueue.add(
-    "send-email",
-    { to, subject, body },
-    { delay: Math.max(0, delay) }
-  );
-
-  const email = await prisma.emailJob.create({
-    data: {
-      recipient: to,
+    const {
+      to,
       subject,
       body,
-      scheduledAt: new Date(sendAt),
-      status: "pending",
-    },
-  });
+      senderEmail,
+      sendAt
+    } = req.body;
 
-  res.json(email);
+    const email = await prisma.emailJob.create({
+      data: {
+        recipient: to,
+        subject,
+        body,
+        senderEmail,
+        scheduledAt: new Date(sendAt)
+      }
+    });
+
+    const delay = new Date(sendAt).getTime() - Date.now();
+
+    await emailQueue.add(
+      "send-email",
+      { emailId: email.id },
+      {
+        jobId: email.id,
+        delay: Math.max(0, delay)
+      }
+    );
+
+    res.json(email);
+  } catch {
+    res.status(401).json({ error: "Unauthorized" });
+  }
 });
 
-router.get("/emails", isAuth, async (req, res) => {
+router.get("/emails", async (_, res) => {
   const emails = await prisma.emailJob.findMany({
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: "desc" }
   });
   res.json(emails);
 });
