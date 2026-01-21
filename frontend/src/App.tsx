@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "./api";
-import type { User } from "./types";
-import Login from "./components/pages/Login";
 import Dashboard from "./components/pages/Dashboard";
+import type { User } from "./types";
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -10,9 +9,9 @@ export default function App() {
 
   useEffect(() => {
     api
-      .get("/auth/me", { withCredentials: true })
+      .get("/auth/me")
       .then((res) => setUser(res.data))
-      .catch(() => setUser(null))
+      .catch(() => setUser(null)) // 👈 IMPORTANT
       .finally(() => setLoading(false));
   }, []);
 
@@ -26,17 +25,28 @@ export default function App() {
   }
 
   if (!user) {
-    return <Login />;
+    return (
+      <div className="auth-container">
+        <div className="logo-large">ReachInbox</div>
+        <p>Login to start your automated outreach</p>
+        <a
+          className="btn-primary"
+          href={`${import.meta.env.VITE_API_BASE}/auth/google`}
+        >
+          Continue with Google
+        </a>
+      </div>
+    );
   }
 
   return (
-    <Dashboard
-      user={user}
-      onLogout={() => {
-        api.post("/auth/logout", {}, { withCredentials: true }).finally(() =>
-          setUser(null)
-        );
-      }}
-    />
-  );
+  <Dashboard
+    user={user}
+    onLogout={() => {
+      localStorage.removeItem("token");
+      window.location.href = "/";
+    }}
+  />
+);
+
 }
