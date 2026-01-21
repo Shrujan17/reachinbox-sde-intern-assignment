@@ -3,7 +3,6 @@ dotenv.config();
 
 import express from "express";
 import cors from "cors";
-import session from "express-session";
 import passport from "passport";
 
 import authRoutes from "./routes/authRoutes";
@@ -18,29 +17,12 @@ app.use(cors({
 }));
 
 app.use(express.json());
-
-app.use(
-  session({
-    name: "reachinbox.sid",
-    secret: process.env.SESSION_SECRET || "reachinbox_secret_123",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: true,      // Render uses HTTPS
-      sameSite: "none",  // Cross-site cookies
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
-    },
-  })
-);
-
 app.use(passport.initialize());
-app.use(passport.session());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/schedule", schedulerRoutes);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () =>
-  console.log(`✅ Server running on port ${PORT}`)
-);
+app.listen(PORT, () => {
+  console.log(`✅ Backend running on port ${PORT}`);
+});

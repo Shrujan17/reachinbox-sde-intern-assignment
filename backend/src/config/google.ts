@@ -9,11 +9,8 @@ passport.use(
       callbackURL:
         "https://reachinbox-sde-intern-assignment.onrender.com/api/auth/google/callback",
     },
-    (accessToken, refreshToken, profile, done) => {
+    (_accessToken, _refreshToken, profile, done) => {
       return done(null, profile);
     }
   )
 );
-
-passport.serializeUser((user, done) => done(null, user));
-passport.deserializeUser((obj: any, done) => done(null, obj));
