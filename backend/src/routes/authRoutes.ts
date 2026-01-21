@@ -7,21 +7,21 @@ router.get("/google", passport.authenticate("google", { scope: ["profile", "emai
 
 router.get(
   "/google/callback",
-  passport.authenticate("google", { session: false }),
+  passport.authenticate("google", { session: true }), // Using session now
   (req, res) => {
-    // Redirects user back to your frontend website value
     const target = process.env.FRONTEND_URL || "https://reachinbox-frontend-n3dd.onrender.com";
-    res.redirect(target);
+    res.redirect(target); // No longer malformed
   }
 );
 
 router.get("/me", (req, res) => {
-  res.json(req.user || null);
+  res.json(req.user || null); // App.tsx init() checks this
 });
 
-router.get("/logout", (req, res) => {
-  const target = process.env.FRONTEND_URL || "https://reachinbox-frontend-n3dd.onrender.com";
-  res.redirect(target);
+router.get("/logout", (req: any, res) => {
+  req.logout(() => {
+    res.redirect(process.env.FRONTEND_URL || "https://reachinbox-frontend-n3dd.onrender.com");
+  });
 });
 
 export default router;
