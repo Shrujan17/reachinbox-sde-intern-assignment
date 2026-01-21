@@ -1,8 +1,6 @@
 import type { EmailJob } from "../types";
 
 export default function EmailTable({ emails }: { emails: EmailJob[] }) {
-  if (!emails.length) return <div>No emails</div>;
-
   return (
     <table>
       <thead>
@@ -16,10 +14,14 @@ export default function EmailTable({ emails }: { emails: EmailJob[] }) {
       <tbody>
         {emails.map((e) => (
           <tr key={e.id}>
-            <td>{e.toEmail}</td>
+            <td>{e.email}</td> {/* ✅ FIX HERE */}
             <td>{e.subject}</td>
             <td>{e.sentAt ?? e.scheduledAt}</td>
-            <td>{e.status}</td>
+            <td>
+              <span className={`status-pill status-${e.status}`}>
+                {e.status}
+              </span>
+            </td>
           </tr>
         ))}
       </tbody>

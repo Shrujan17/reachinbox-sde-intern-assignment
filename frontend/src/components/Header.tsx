@@ -1,11 +1,11 @@
 import type { User } from "../types";
 
-interface Props {
+export interface HeaderProps {
   user: User;
   onLogout: () => void;
 }
 
-export default function Header({ user, onLogout }: Props) {
+const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
   return (
     <header className="header">
       <div className="logo">ReachInbox</div>
@@ -16,11 +16,9 @@ export default function Header({ user, onLogout }: Props) {
           <div className="user-email">{user.email}</div>
         </div>
 
-        <img
-          className="avatar"
-          src={user.avatar}
-          alt="avatar"
-        />
+        {user.avatar && (
+          <img src={user.avatar} className="avatar" />
+        )}
 
         <button className="btn-logout" onClick={onLogout}>
           Logout
@@ -28,4 +26,6 @@ export default function Header({ user, onLogout }: Props) {
       </div>
     </header>
   );
-}
+};
+
+export default Header;

@@ -1,16 +1,15 @@
-export interface User {
+export type User = {
   id: string;
-  displayName: string;
   email: string;
-  avatar: string;
-}
+  displayName: string;
+  avatar?: string;
+};
 
-export interface EmailJob {
+export type EmailJob = {
   id: string;
-  toEmail: string;
+  email: string;
   subject: string;
-  body: string;
-  status: "SCHEDULED" | "SENT" | "FAILED";
+  status: "pending" | "sent" | "failed";
   scheduledAt: string;
-  sentAt?: string | null;
-}
+  sentAt?: string;
+};

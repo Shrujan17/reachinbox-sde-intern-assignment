@@ -1,35 +1,42 @@
 import { useEffect, useState } from "react";
-import Dashboard from "./components/pages/Dashboard";
+import api from "./api";
 import type { User } from "./types";
+import Login from "./components/pages/Login";
+import Dashboard from "./components/pages/Dashboard";
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
-    fetch(`${import.meta.env.VITE_API_BASE}/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then(setUser)
+    api
+      .get("/auth/me", { withCredentials: true })
+      .then((res) => setUser(res.data))
+      .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div>Loading...</div>;
-
-  if (!user) {
+  if (loading) {
     return (
-      <a href={`${import.meta.env.VITE_API_BASE}/auth/google`}>
-        Login with Google
-      </a>
+      <div className="loading-screen">
+        <div className="logo-large">ReachInbox</div>
+        <p>Loading...</p>
+      </div>
     );
   }
 
-  return <Dashboard user={user} />;
+  if (!user) {
+    return <Login />;
+  }
+
+  return (
+    <Dashboard
+      user={user}
+      onLogout={() => {
+        api.post("/auth/logout", {}, { withCredentials: true }).finally(() =>
+          setUser(null)
+        );
+      }}
+    />
+  );
 }
