@@ -3,18 +3,25 @@ import cors from "cors";
 import dotenv from "dotenv";
 import passport from "passport";
 
-import "./config/google";
+dotenv.config();
+
+/**
+ * Load Google OAuth ONLY if env vars exist
+ * (prevents crash during demo / local testing)
+ */
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  require("./config/google");
+}
+
 import authRoutes from "./routes/authRoutes";
 import scheduleRoutes from "./routes/schedulerRoutes";
-
-dotenv.config();
 
 const app = express();
 
 app.use(
   cors({
     origin: process.env.FRONTEND_URL,
-    credentials: true
+    credentials: true,
   })
 );
 

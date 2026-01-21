@@ -1,24 +1,21 @@
 import { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { emailQueue } from "../queue/emailQueue";
-import { verifyToken } from "../utils/jwt";
+// import { verifyToken } from "../utils/jwt"; // ⛔ disabled for demo
 
 const router = Router();
 const prisma = new PrismaClient();
 
 /**
- * Schedule a new email
+ * Schedule a new email (DEMO MODE – auth bypassed)
  */
 router.post("/", async (req: Request, res: Response) => {
   try {
-    // 🔐 Auth
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({ error: "Missing token" });
-    }
-
-    const token = authHeader.split(" ")[1];
-    verifyToken(token);
+    // 🔓 DEMO MODE: bypass auth
+    const demoUser = {
+      id: "demo-user",
+      email: "demo@reachinbox.dev"
+    };
 
     // 📩 Payload
     const {
@@ -45,7 +42,7 @@ router.post("/", async (req: Request, res: Response) => {
       }
     });
 
-    // ⏳ Schedule job
+    // ⏳ Schedule job with BullMQ
     const delay = new Date(sendAt).getTime() - Date.now();
 
     await emailQueue.add(
@@ -65,7 +62,7 @@ router.post("/", async (req: Request, res: Response) => {
 });
 
 /**
- * Get all emails
+ * Get all scheduled & sent emails
  */
 router.get("/emails", async (_: Request, res: Response) => {
   const emails = await prisma.emailJob.findMany({
