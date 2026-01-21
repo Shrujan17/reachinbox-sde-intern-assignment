@@ -1,14 +1,18 @@
+// src/types.ts
+
 export interface User {
   id: string;
   displayName: string;
-  emails?: { value: string }[];
-  photos?: { value: string }[];
+  email: string;
+  avatar: string;
 }
 
 export interface EmailJob {
   id: string;
-  recipient: string;
+  toEmail: string;
   subject: string;
-  status: string;
+  body: string;
+  status: "SCHEDULED" | "SENT" | "FAILED";
   scheduledAt: string;
+  sentAt?: string | null;
 }

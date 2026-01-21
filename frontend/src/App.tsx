@@ -1,52 +1,35 @@
 import { useEffect, useState } from "react";
-import api from "./api";
-
-type User = {
-  id: string;
-  displayName: string;
-  email: string;
-  photo?: string;
-};
+import Dashboard from "./components/pages/Dashboard";
+import type { User } from "./types";
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api
-      .get("/auth/me")
-      .then((res) => setUser(res.data))
-      .catch(() => setUser(null))
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    fetch(`${import.meta.env.VITE_API_BASE}/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then(setUser)
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) {
-    return <div style={{ color: "white" }}>Loading...</div>;
-  }
+  if (loading) return <div>Loading...</div>;
 
   if (!user) {
     return (
-      <div style={{ padding: 40, color: "white" }}>
-        <h1>ReachInbox</h1>
-        <a href={`${import.meta.env.VITE_API_BASE}/auth/google`}>
-          Login with Google
-        </a>
-      </div>
+      <a href={`${import.meta.env.VITE_API_BASE}/auth/google`}>
+        Login with Google
+      </a>
     );
   }
 
-  return (
-    <div style={{ padding: 40, color: "white" }}>
-      <h1>Welcome, {user.displayName}</h1>
-      <p>{user.email}</p>
-
-      <button
-        onClick={() => {
-          window.location.href = `${import.meta.env.VITE_API_BASE}/auth/logout`;
-        }}
-      >
-        Logout
-      </button>
-    </div>
-  );
+  return <Dashboard user={user} />;
 }

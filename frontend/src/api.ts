@@ -8,7 +8,16 @@ if (!API_BASE) {
 
 const api = axios.create({
   baseURL: API_BASE,
-  withCredentials: true,
+  withCredentials: true, // important for auth if needed
+});
+
+// Optional: attach JWT automatically if you store it
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 export default api;
