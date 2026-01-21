@@ -4,6 +4,9 @@ import "./index.css";
 
 const API_BASE = "https://reachinbox-sde-intern-assignment.onrender.com/api";
 
+/**
+ * Attach JWT to every request
+ */
 axios.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
@@ -17,26 +20,27 @@ function App() {
   const [emails, setEmails] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Capture token from redirect
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
+    const initAuth = async () => {
+      // 1️⃣ Capture token from URL (FIRST)
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get("token");
 
-    if (token) {
-      localStorage.setItem("token", token);
-      window.history.replaceState({}, "", "/");
-    }
-  }, []);
+      if (token) {
+        localStorage.setItem("token", token);
+        window.history.replaceState({}, "", "/");
+      }
 
-  // Load user
-  useEffect(() => {
-    const init = async () => {
+      // 2️⃣ Now safely call backend
       try {
         const me = await axios.get(`${API_BASE}/auth/me`);
+
         if (me.data?.id) {
           setUser(me.data);
           const res = await axios.get(`${API_BASE}/schedule/emails`);
           setEmails(res.data);
+        } else {
+          setUser(null);
         }
       } catch {
         setUser(null);
@@ -44,10 +48,13 @@ function App() {
         setLoading(false);
       }
     };
-    init();
+
+    initAuth();
   }, []);
 
-  if (loading) return <div className="loading-screen">Loading...</div>;
+  if (loading) {
+    return <div className="loading-screen">Loading ReachInbox...</div>;
+  }
 
   if (!user) {
     return (
@@ -68,7 +75,7 @@ function App() {
   return (
     <div className="dashboard">
       <h2>Welcome, {user.displayName}</h2>
-      <p>Total scheduled emails: {emails.length}</p>
+      <p>Scheduled Emails: {emails.length}</p>
     </div>
   );
 }
