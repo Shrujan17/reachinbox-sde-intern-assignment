@@ -1,34 +1,18 @@
-// frontend/src/api.ts
+import axios from "axios";
 
-export const API = import.meta.env.VITE_API_URL;
+export const API_BASE =
+  "https://reachinbox-sde-intern-assignment.onrender.com/api";
 
-export async function getUser() {
-  const res = await fetch(`${API}/auth/me`, {
-    credentials: "include",
-  });
-  return res.json();
-}
+const api = axios.create({
+  baseURL: API_BASE
+});
 
-export async function getEmails() {
-  const res = await fetch(`${API}/emails`, {
-    credentials: "include",
-  });
-  return res.json();
-}
-
-export async function scheduleEmail(data: any) {
-  const res = await fetch(`${API}/schedule`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify(data),
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to schedule email");
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
+  return config;
+});
 
-  return res.json();
-}
+export default api;
