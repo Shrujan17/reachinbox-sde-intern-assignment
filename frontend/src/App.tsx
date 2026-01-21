@@ -1,41 +1,72 @@
-import { useState, useEffect } from "react"; // Removed 'React' as it is unused in newer versions of React
+throw new Error("FRONTEND BUILD CHECK");
+import { useEffect, useState } from "react";
 import axios from "axios";
 import "./index.css";
 
-axios.defaults.withCredentials = true;
 const API_BASE = "https://reachinbox-sde-intern-assignment.onrender.com/api";
 
-const App = () => {
+/**
+ * Attach JWT to every request
+ */
+axios.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+function App() {
   const [user, setUser] = useState<any>(null);
-  const [emails, setEmails] = useState<any[]>([]); // We will now use this in the UI below
+  const [emails, setEmails] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const init = async () => {
+    const initAuth = async () => {
+      // 1️⃣ Capture token from URL (FIRST)
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get("token");
+
+      if (token) {
+        localStorage.setItem("token", token);
+        window.history.replaceState({}, "", "/");
+      }
+
+      // 2️⃣ Now safely call backend
       try {
-        const authRes = await axios.get(`${API_BASE}/auth/me`);
-        if (authRes.data?.id) {
-          setUser(authRes.data);
-          // Fetching emails to ensure the 'emails' variable is used
-          const emailRes = await axios.get(`${API_BASE}/schedule/emails`);
-          setEmails(emailRes.data);
+        const me = await axios.get(`${API_BASE}/auth/me`);
+
+        if (me.data?.id) {
+          setUser(me.data);
+          const res = await axios.get(`${API_BASE}/schedule/emails`);
+          setEmails(res.data);
+        } else {
+          setUser(null);
         }
-      } catch (err) {
-        console.log("Not logged in");
+      } catch {
+        setUser(null);
       } finally {
         setLoading(false);
       }
     };
-    init();
+
+    initAuth();
   }, []);
 
-  if (loading) return <div className="loading-screen">Loading ReachInbox...</div>;
+  if (loading) {
+    return <div className="loading-screen">Loading ReachInbox...</div>;
+  }
 
   if (!user) {
     return (
       <div className="auth-container">
         <h1>📫 ReachInbox</h1>
-        <button onClick={() => window.location.href = `${API_BASE}/auth/google`}>
+        <button
+          className="btn-primary"
+          onClick={() =>
+            (window.location.href = `${API_BASE}/auth/google`)
+          }
+        >
           Continue with Google
         </button>
       </div>
@@ -45,9 +76,9 @@ const App = () => {
   return (
     <div className="dashboard">
       <h2>Welcome, {user.displayName}</h2>
-      <p>You have {emails.length} scheduled emails.</p> {/* This line ensures 'emails' is used */}
+      <p>Scheduled Emails: {emails.length}</p>
     </div>
   );
-};
+}
 
 export default App;
